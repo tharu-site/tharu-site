@@ -239,7 +239,7 @@ const popup =
             ],
           },
 
-         onSuccess(transaction) {
+         onSuccess(transaction: any) {
 
   clearCart();
 
