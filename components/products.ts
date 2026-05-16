@@ -31,9 +31,9 @@ export const products: Product[] = [
     description:
       "A refined expression of balance, restraint, and modern watchmaking.\n\nThis watch is a limited edition with only 50 pieces available. It is available to purchase online whilst stocks last.",
 
-    basePrice: "₦75,000",
+    basePrice: "₦100",
 
-    originalPrice: "₦100,000",
+    originalPrice: "₦90,000",
 
     variants: {
       black: "/blackstrapblackdial.jpg",
@@ -65,9 +65,9 @@ export const products: Product[] = [
     description:
       "A refined expression of balance, restraint, and modern watchmaking.\n\nThis watch is a limited edition with only 70 pieces available. It is available to purchase online whilst stocks last.",
 
-    basePrice: "₦75,000",
+    basePrice: "₦76,499",
 
-    originalPrice: "₦100,000",
+    originalPrice: "₦90,000",
 
     variants: {
       black: "/blackstrapwhitedial.jpg",
