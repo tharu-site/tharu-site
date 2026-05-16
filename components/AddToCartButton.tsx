@@ -18,10 +18,11 @@ export default function AddToCartButton({
     <button
       onClick={() =>
         addToCart({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
         })
       }
       className="rounded-full bg-white px-8 py-3 text-black transition hover:bg-neutral-200"
