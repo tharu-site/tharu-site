@@ -20,8 +20,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "THARU",
-  description: "Modern watches built with restraint.",
+  title: "THARU Watches",
+  description: "Modern luxury watches built with bold restraint.",
+
+  verification: {
+    google: "Kp8W21hRvdD_W6LySEKsTO9IbV4QMc87LHk5Zn0aPrQ",
+  },
 };
 
 export const viewport: Viewport = {
