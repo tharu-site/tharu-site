@@ -106,11 +106,11 @@ export default function Hero() {
               <div>
 
                 <h3 className="text-xs font-light md:text-2xl">
-                Originis
+                Originis 
                 </h3>
 
                 <p className="mt-1 text-[10px] text-neutral-400 md:text-sm">
-                Black Dial
+                Noctis
                 </p>
 
               </div>
@@ -152,7 +152,7 @@ export default function Hero() {
                 </h3>
 
                 <p className="mt-1 text-[10px] text-neutral-400 md:text-sm">
-                White Dial
+                Alba
                 </p>
 
               </div>
