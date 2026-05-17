@@ -23,7 +23,7 @@ export const products: Product[] = [
   {
     id: "originis-black-dial",
 
-    name: "Originis Black Dial",
+    name: "Originis Noctis",
 
     shortDescription:
       "A refined expression of balance, restraint, and modern watchmaking.",
@@ -57,7 +57,7 @@ export const products: Product[] = [
   {
     id: "originis-white-dial",
 
-    name: "Originis White Dial",
+    name: "Originis Alba",
 
     shortDescription:
       "A refined expression of balance, restraint, and modern watchmaking.",
