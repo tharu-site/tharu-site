@@ -52,7 +52,7 @@ export default function Hero() {
 
           {/* DESCRIPTION */}
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-neutral-400 md:mt-8 md:max-w-2xl md:text-lg">
-            Limited to 120 pieces - no restock.
+            THARU is built on restraint.
             Clean design, balanced proportions,
             and a quiet sense of presence.
           </p>
@@ -65,7 +65,7 @@ export default function Hero() {
               className="rounded-full border border-white bg-white px-7 py-3 text-sm font-medium text-black transition hover:bg-neutral-200"
             >
 
-              PRE-ORDER NOW
+              Explore Collection
 
             </Link>
 
