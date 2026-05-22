@@ -65,7 +65,7 @@ export default function Hero() {
               className="rounded-full border border-white bg-white px-7 py-3 text-sm font-medium text-black transition hover:bg-neutral-200"
             >
 
-              Explore Collection
+              EXPLORE COLLECTION
 
             </Link>
 
