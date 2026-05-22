@@ -140,43 +140,6 @@ export default function CheckoutPage() {
 
         setMessage("");
 
-        /* SEND ORDER DETAILS */
-        const response =
-          await fetch(
-            "/api/checkout",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body: JSON.stringify({
-                email,
-                firstName,
-                lastName,
-                phone,
-                address,
-                country,
-                state,
-                cart,
-                total,
-              }),
-            }
-          );
-
-        if (!response.ok) {
-
-          setMessage(
-            "Something went wrong. Please try again."
-          );
-
-          setLoading(false);
-
-          return;
-        }
-
         /* ONLY RUN IN BROWSER */
         if (
           typeof window ===
@@ -187,13 +150,13 @@ export default function CheckoutPage() {
 
         /* LOAD PAYSTACK */
         const PaystackPop = (
-  await import(
-    "@paystack/inline-js"
-  )
-).default;
+          await import(
+            "@paystack/inline-js"
+          )
+        ).default;
 
-const popup =
-  new PaystackPop();
+        const popup =
+          new PaystackPop();
 
         popup.newTransaction({
 
@@ -239,17 +202,53 @@ const popup =
             ],
           },
 
-         onSuccess(transaction: any) {
+          async onSuccess(transaction: any) {
 
-  clearCart();
+            try {
 
-  window.location.href =
-    `/success?reference=${transaction.reference}` +
-    `&email=${email}` +
-    `&amount=${total}` +
-    `&firstName=${firstName}` +
-    `&state=${state}`;
-},
+              /* SEND ORDER EMAIL ONLY AFTER PAYMENT SUCCESS */
+              await fetch(
+                "/api/checkout",
+                {
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json",
+                  },
+
+                  body: JSON.stringify({
+                    email,
+                    firstName,
+                    lastName,
+                    phone,
+                    address,
+                    country,
+                    state,
+                    cart,
+                    total,
+                    reference:
+                      transaction.reference,
+                  }),
+                }
+              );
+
+              clearCart();
+
+              window.location.href =
+                `/success?reference=${transaction.reference}` +
+                `&email=${email}` +
+                `&amount=${total}` +
+                `&firstName=${firstName}` +
+                `&state=${state}`;
+
+            } catch {
+
+              setMessage(
+                "Payment succeeded but confirmation failed."
+              );
+            }
+          },
 
           onCancel() {
 
@@ -506,4 +505,4 @@ const popup =
 
     </main>
   );
-}// update
+}
