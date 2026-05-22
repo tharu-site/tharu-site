@@ -65,7 +65,7 @@ export default function Hero() {
               className="rounded-full border border-white bg-white px-7 py-3 text-sm font-medium text-black transition hover:bg-neutral-200"
             >
 
-              PRE-ORDER NOW
+              Explore Collection
 
             </Link>
 
@@ -120,7 +120,7 @@ export default function Hero() {
                 className="rounded-full border border-neutral-700 px-3 py-1 text-[9px] transition hover:border-white md:px-4 md:py-1.5 md:text-sm"
               >
 
-                BUY NOW
+                PRE-ORDER NOW
 
               </Link>
 
@@ -162,7 +162,7 @@ export default function Hero() {
                 className="rounded-full border border-neutral-700 px-3 py-1 text-[9px] transition hover:border-white md:px-4 md:py-1.5 md:text-sm"
               >
 
-                BUY NOW
+                PRE-ORDER NOW
 
               </Link>
 
