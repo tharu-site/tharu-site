@@ -281,7 +281,7 @@ export default function ProductPage({
                 className="rounded-full bg-white px-8 py-4 text-sm font-medium uppercase tracking-[0.2em] text-black transition hover:bg-neutral-200"
               >
 
-                Buy Now
+                PRE-ORDER
 
               </button>
 
