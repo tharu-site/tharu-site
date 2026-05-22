@@ -121,7 +121,7 @@ export default function CinematicSlider() {
                         className="mt-8 inline-block rounded-full bg-white px-6 py-2.5 text-xs font-medium tracking-wide text-black transition hover:bg-neutral-200 md:px-8 md:py-3 md:text-sm"
                       >
 
-                        BUY NOW
+                        PRE-ORDER
 
                       </Link>
 

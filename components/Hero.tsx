@@ -120,7 +120,7 @@ export default function Hero() {
                 className="rounded-full border border-neutral-700 px-3 py-1 text-[9px] transition hover:border-white md:px-4 md:py-1.5 md:text-sm"
               >
 
-                PRE-ORDER NOW
+                PRE-ORDER
 
               </Link>
 
@@ -162,7 +162,7 @@ export default function Hero() {
                 className="rounded-full border border-neutral-700 px-3 py-1 text-[9px] transition hover:border-white md:px-4 md:py-1.5 md:text-sm"
               >
 
-                PRE-ORDER NOW
+                PRE-ORDER
 
               </Link>
 
