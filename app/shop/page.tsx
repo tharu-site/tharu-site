@@ -23,7 +23,7 @@ export default function ShopPage() {
             <div className="inline-flex rounded-full border border-neutral-800 bg-neutral-950 px-5 py-3">
 
               <p className="text-[10px] uppercase tracking-[0.35em] text-neutral-300 md:text-xs">
-                Pre-order — ships upon arrival. Expected delivery late June 2026.
+                Pre - Order. Delivery begins mid June, 2026. 
               </p>
 
             </div>
