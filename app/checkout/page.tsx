@@ -81,23 +81,28 @@ export default function CheckoutPage() {
   const [message, setMessage] =
     useState("");
 
-  /* TOTAL */
-  const total = useMemo(() => {
+  const DELIVERY_FEE = 5000;
 
-    return cart.reduce((acc, item) => {
+  /* SUBTOTAL */
+const subtotal = useMemo(() => {
 
-      const numericPrice = Number(
-        item.price.replace(/[₦,]/g, "")
-      );
+  return cart.reduce((acc, item) => {
 
-      return (
-        acc +
-        numericPrice * item.quantity
-      );
+    const numericPrice = Number(
+      item.price.replace(/[₦,]/g, "")
+    );
 
-    }, 0);
+    return (
+      acc +
+      numericPrice * item.quantity
+    );
 
-  }, [cart]);
+  }, 0);
+
+}, [cart]);
+
+/* TOTAL INCLUDING DELIVERY */
+const total = subtotal + DELIVERY_FEE;
 
   const publicKey =
     process.env
@@ -218,18 +223,21 @@ export default function CheckoutPage() {
                   },
 
                   body: JSON.stringify({
-                    email,
-                    firstName,
-                    lastName,
-                    phone,
-                    address,
-                    country,
-                    state,
-                    cart,
-                    total,
-                    reference:
-                      transaction.reference,
-                  }),
+                  email,
+                  firstName,
+                  lastName,
+                  phone,
+                  address,
+                  country,
+                  state,
+                  cart,
+                  subtotal,
+                  deliveryFee:
+                    DELIVERY_FEE,
+                  total,
+                  reference:
+                    transaction.reference,
+                }),
                 }
               );
 
@@ -430,6 +438,10 @@ export default function CheckoutPage() {
           {/* RIGHT SIDE */}
           <div className="rounded-[32px] border border-neutral-900 bg-neutral-950 p-8">
 
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-neutral-500">
+              Nationwide Delivery Included
+            </p>
+
             <h2 className="text-2xl font-light">
               Order Summary
             </h2>
@@ -464,17 +476,41 @@ export default function CheckoutPage() {
 
             </div>
 
-            {/* TOTAL */}
-            <div className="mt-10 flex items-center justify-between text-xl">
+            {/* SUBTOTAL */}
+          <div className="mt-10 flex items-center justify-between border-b border-neutral-800 pb-4">
 
-              <p>Total</p>
+            <p>Subtotal</p>
 
-              <p>
-                ₦
-                {total.toLocaleString()}
-              </p>
+            <p>
+              ₦
+              {subtotal.toLocaleString()}
+            </p>
 
-            </div>
+          </div>
+
+          {/* DELIVERY */}
+          <div className="mt-4 flex items-center justify-between border-b border-neutral-800 pb-4">
+
+            <p>Delivery Fee</p>
+
+            <p>
+              ₦
+              {DELIVERY_FEE.toLocaleString()}
+            </p>
+
+          </div>
+
+          {/* TOTAL */}
+          <div className="mt-4 flex items-center justify-between text-xl">
+
+            <p>Total</p>
+
+            <p>
+              ₦
+              {total.toLocaleString()}
+            </p>
+
+          </div>
 
             {/* BUTTON */}
             <div className="mt-10">
