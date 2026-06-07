@@ -82,7 +82,7 @@ export default function ProductPage({
       name:
         `${product.name} (${strap} strap)`,
 
-      price: product.basePrice,
+      price: product.originalPrice,
 
       image: currentImage,
 
@@ -101,7 +101,7 @@ export default function ProductPage({
       name:
         `${product.name} (${strap} strap)`,
 
-      price: product.basePrice,
+      price: product.originalPrice,
 
       image: currentImage,
 
@@ -157,28 +157,15 @@ export default function ProductPage({
 
               <div className="flex items-center gap-4">
 
-                <p className="text-4xl text-white">
-                  {product.basePrice}
-                </p>
-
-                <p className="text-lg text-neutral-500 line-through">
-                  {product.originalPrice}
-                </p>
-
-              </div>
-
-              <p className="mt-3 text-xs uppercase tracking-[0.35em] text-neutral-500">
-                Pre-Launch Price
+              <p className="text-4xl text-white">
+                {product.originalPrice}
               </p>
 
-              {/* BADGE */}
-              <div className="mt-5 inline-flex rounded-full border border-neutral-800 bg-neutral-950 px-4 py-2">
+            </div>
 
-                <p className="text-xs uppercase tracking-[0.25em] text-neutral-400">
-                  Limited Pre-Launch Offer
-                </p>
-
-              </div>
+            <p className="mt-3 text-xs uppercase tracking-[0.35em] text-neutral-500">
+              Official Retail Price
+            </p>
 
             </div>
 
@@ -281,7 +268,7 @@ export default function ProductPage({
                 className="rounded-full bg-white px-8 py-4 text-sm font-medium uppercase tracking-[0.2em] text-black transition hover:bg-neutral-200"
               >
 
-                PRE-ORDER
+                Buy Now
 
               </button>
 

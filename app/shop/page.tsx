@@ -22,10 +22,6 @@ export default function ShopPage() {
 
             <div className="inline-flex rounded-full border border-neutral-800 bg-neutral-950 px-5 py-3">
 
-              <p className="text-[10px] uppercase tracking-[0.35em] text-neutral-300 md:text-xs">
-                Pre - Order. Delivery begins mid June, 2026. 
-              </p>
-
             </div>
 
           </div>
@@ -65,18 +61,15 @@ export default function ShopPage() {
                       {product.shortDescription}
                     </p>
 
-                    {/* PRICE */}
-                    <div className="mt-3 flex items-center gap-3">
+                  
+                   {/* PRICE */}
+                  <div className="mt-3">
 
-                      <p className="text-sm text-white md:text-base">
-                        {product.basePrice}
-                      </p>
+                    <p className="text-sm text-white md:text-base">
+                      {product.originalPrice}
+                    </p>
 
-                      <p className="text-[11px] text-neutral-500 line-through md:text-sm">
-                        {product.originalPrice}
-                      </p>
-
-                    </div>
+                  </div>
 
                     <button className="mt-4 rounded-full border border-neutral-700 px-4 py-1.5 text-[10px] uppercase tracking-wide transition hover:border-white md:mt-5 md:px-5 md:py-2 md:text-sm">
 
