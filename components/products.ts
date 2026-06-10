@@ -36,9 +36,9 @@ export const products: Product[] = [
     originalPrice: "₦90,000",
 
     variants: {
-      black: "/blackstrapblackdial.jpg",
+      black: "/blackstrapblackdial1.jpg",
 
-      brown: "/brownstrapblackdial.jpg",
+      brown: "/brownstrapblackdial1.jpg",
     },
 
     specs: [
@@ -70,9 +70,9 @@ export const products: Product[] = [
     originalPrice: "₦90,000",
 
     variants: {
-      black: "/blackstrapwhitedial.jpg",
+      black: "/blackstrapwhitedial1.jpg",
 
-      brown: "/brownstrapwhitedial.jpg",
+      brown: "/brownstrapwhitedial1.jpg",
     },
 
     specs: [
