@@ -92,7 +92,7 @@ export default function Hero() {
             <div className="relative h-[170px] overflow-hidden rounded-[20px] bg-black md:h-[420px] md:rounded-[24px]">
 
               <Image
-                src="/blackstrapblackdial.jpg"
+                src="/blackstrapblackdial1.jpg"
                 alt="Black Strap Black Dial"
                 fill
                 priority
@@ -134,7 +134,7 @@ export default function Hero() {
             <div className="relative h-[170px] overflow-hidden rounded-[20px] bg-black md:h-[420px] md:rounded-[24px]">
 
               <Image
-                src="/blackstrapwhitedial.jpg"
+                src="/blackstrapwhitedial1.jpg"
                 alt="Black Strap White Dial"
                 fill
                 priority
