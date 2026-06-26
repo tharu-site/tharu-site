@@ -17,15 +17,6 @@ export default function ShopPage() {
 
         <div className="mx-auto max-w-5xl">
 
-          {/* PREORDER NOTICE */}
-          <div className="mb-10 flex justify-center">
-
-            <div className="inline-flex rounded-full border border-neutral-800 bg-neutral-950 px-5 py-3">
-
-            </div>
-
-          </div>
-
           {/* PRODUCTS GRID */}
           <div className="grid grid-cols-2 gap-4 md:gap-8">
 
@@ -45,7 +36,7 @@ export default function ShopPage() {
                       src={product.variants.black}
                       alt={product.name}
                       fill
-                      className="object-contain transition duration-500 group-hover:scale-[1.02]"
+                      className="object-cover object-center transition duration-500 group-hover:scale-[1.02]"
                     />
 
                   </div>

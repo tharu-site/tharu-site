@@ -108,7 +108,7 @@ export default function ProductPage({
       quantity,
     });
 
-    router.push("/checkout");
+    router.push("/cart");
   };
 
   return (
@@ -123,15 +123,15 @@ export default function ProductPage({
           {/* IMAGE */}
           <div className="overflow-hidden rounded-[32px] border border-neutral-800 bg-black">
 
-            <div className="relative h-[420px] md:h-[750px]">
+           <div className="relative h-[560px] md:h-[900px]">
 
               <Image
-                src={currentImage}
-                alt={product.name}
-                fill
-                priority
-                className="object-contain"
-              />
+              src={currentImage}
+              alt={product.name}
+              fill
+              priority
+              className="object-cover object-top transition duration-500"
+            />
 
             </div>
 

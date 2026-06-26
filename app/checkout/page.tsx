@@ -512,6 +512,15 @@ const total = subtotal + DELIVERY_FEE;
 
           </div>
 
+          {/* DELIVERY NOTICE */}
+          <div className="mt-8 rounded-[24px] border border-neutral-800 bg-black px-6 py-5">
+
+            <p className="text-center text-sm uppercase tracking-[0.2em] text-neutral-400">
+              Delivery takes <span className="font-medium text-white">3–5 business days</span>.
+            </p>
+
+          </div>
+
             {/* BUTTON */}
             <div className="mt-10">
 

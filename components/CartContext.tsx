@@ -68,30 +68,32 @@ export function CartProvider({
   }, [cart]);
 
   /* ADD TO CART */
-  const addToCart = (item: CartItem) => {
+const addToCart = (item: CartItem) => {
 
-    setCart((prev) => {
+  setCart((prev) => {
 
-      const existing = prev.find(
-        (p) => p.id === item.id
+    const existing = prev.find(
+      (p) => p.id === item.id
+    );
+
+    if (existing) {
+
+      return prev.map((p) =>
+        p.id === item.id
+          ? {
+              ...p,
+              quantity: item.quantity,
+            }
+          : p
       );
 
-      if (existing) {
+    }
 
-        return prev.map((p) =>
-          p.id === item.id
-            ? {
-                ...p,
-                quantity:
-                  p.quantity + item.quantity,
-              }
-            : p
-        );
-      }
+    return [...prev, item];
 
-      return [...prev, item];
-    });
-  };
+  });
+
+};
 
   /* REMOVE */
   const removeFromCart = (id: string) => {
@@ -101,6 +103,7 @@ export function CartProvider({
         (item) => item.id !== id
       )
     );
+
   };
 
   /* INCREASE */
@@ -119,6 +122,7 @@ export function CartProvider({
           : item
       )
     );
+
   };
 
   /* DECREASE */
@@ -141,6 +145,7 @@ export function CartProvider({
           (item) => item.quantity > 0
         )
     );
+
   };
 
   /* UPDATE QUANTITY */
@@ -161,6 +166,7 @@ export function CartProvider({
           : item
       )
     );
+
   };
 
   /* CLEAR CART */
@@ -171,6 +177,7 @@ export function CartProvider({
     localStorage.removeItem(
       "tharu-cart"
     );
+
   };
 
   return (
@@ -188,6 +195,7 @@ export function CartProvider({
       {children}
     </CartContext.Provider>
   );
+
 }
 
 export function useCart() {
@@ -200,7 +208,9 @@ export function useCart() {
     throw new Error(
       "useCart must be used inside CartProvider"
     );
+
   }
 
   return context;
+
 }

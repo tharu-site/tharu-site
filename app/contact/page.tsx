@@ -134,7 +134,7 @@ export default function ContactPage() {
                 </p>
 
                 <a
-                  href="https://wa.me/2340000000000"
+                  href="https://wa.me/2349020816141"
                   target="_blank"
                   className="mt-3 inline-block text-lg font-light transition hover:text-neutral-300 md:text-2xl"
                 >
