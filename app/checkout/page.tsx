@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 import { useCart } from "@/components/CartContext";
+import { supabase } from "@/lib/supabase";
 
 const nigerianStates = [
   "Abia",
@@ -47,8 +52,13 @@ const nigerianStates = [
   "Zamfara",
 ];
 
-export default function CheckoutPage() {
+type StoreSettings = {
+  delivery_fee: number;
+  accepting_orders: boolean;
+  currency: string;
+};
 
+export default function CheckoutPage() {
   const {
     cart,
     clearCart,
@@ -78,39 +88,122 @@ export default function CheckoutPage() {
   const [loading, setLoading] =
     useState(false);
 
+  const [settingsLoading, setSettingsLoading] =
+    useState(true);
+
   const [message, setMessage] =
     useState("");
 
-  const DELIVERY_FEE = 5000;
+  const [storeSettings, setStoreSettings] =
+    useState<StoreSettings | null>(null);
 
-  /* SUBTOTAL */
-const subtotal = useMemo(() => {
+  /*
+   * LOAD STORE SETTINGS
+   */
 
-  return cart.reduce((acc, item) => {
+  useEffect(() => {
+    const loadSettings = async () => {
+      setSettingsLoading(true);
 
-    const numericPrice = Number(
-      item.price.replace(/[₦,]/g, "")
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("store_settings")
+        .select(
+          "delivery_fee, accepting_orders, currency"
+        )
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error(
+          "Checkout settings error:",
+          error
+        );
+
+        setMessage(
+          "Unable to load store settings."
+        );
+
+        setSettingsLoading(false);
+
+        return;
+      }
+
+      if (!data) {
+        setMessage(
+          "Store settings are not configured."
+        );
+
+        setSettingsLoading(false);
+
+        return;
+      }
+
+      setStoreSettings(data);
+
+      setSettingsLoading(false);
+    };
+
+    loadSettings();
+  }, []);
+
+  /*
+   * SUBTOTAL
+   */
+
+  const subtotal = useMemo(() => {
+    return cart.reduce(
+      (acc, item) => {
+        const numericPrice =
+          Number(
+            String(item.price).replace(
+              /[₦,]/g,
+              ""
+            )
+          );
+
+        return (
+          acc +
+          numericPrice *
+            item.quantity
+        );
+      },
+      0
+    );
+  }, [cart]);
+
+  /*
+   * DELIVERY FEE
+   */
+
+  const deliveryFee =
+    Number(
+      storeSettings?.delivery_fee ?? 0
     );
 
-    return (
-      acc +
-      numericPrice * item.quantity
-    );
+  /*
+   * TOTAL
+   */
 
-  }, 0);
+  const total =
+    subtotal + deliveryFee;
 
-}, [cart]);
-
-/* TOTAL INCLUDING DELIVERY */
-const total = subtotal + DELIVERY_FEE;
+  /*
+   * PAYSTACK PUBLIC KEY
+   */
 
   const publicKey =
     process.env
-      .NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
+      .NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ||
+    "";
 
-  /* VALIDATE FORM */
+  /*
+   * VALIDATE FORM
+   */
+
   const validateForm = () => {
-
     if (
       !email ||
       !firstName ||
@@ -119,9 +212,16 @@ const total = subtotal + DELIVERY_FEE;
       !address ||
       !state
     ) {
-
       setMessage(
         "Please fill all required checkout fields."
+      );
+
+      return false;
+    }
+
+    if (cart.length === 0) {
+      setMessage(
+        "Your cart is empty."
       );
 
       return false;
@@ -130,22 +230,60 @@ const total = subtotal + DELIVERY_FEE;
     return true;
   };
 
-  /* HANDLE PAYMENT */
+  /*
+   * HANDLE PAYMENT
+   */
+
   const handlePayment =
     async () => {
+      if (settingsLoading) {
+        setMessage(
+          "Please wait while checkout settings load."
+        );
+
+        return;
+      }
+
+      if (!storeSettings) {
+        setMessage(
+          "Store settings are unavailable."
+        );
+
+        return;
+      }
+
+      /*
+       * CHECK WHETHER STORE IS
+       * ACCEPTING ORDERS
+       */
+
+      if (
+        !storeSettings.accepting_orders
+      ) {
+        setMessage(
+          "Orders are currently paused. Please try again later."
+        );
+
+        return;
+      }
 
       const isValid =
         validateForm();
 
       if (!isValid) return;
 
+      if (!publicKey) {
+        setMessage(
+          "Payment configuration is missing."
+        );
+
+        return;
+      }
+
       try {
-
         setLoading(true);
-
         setMessage("");
 
-        /* ONLY RUN IN BROWSER */
         if (
           typeof window ===
           "undefined"
@@ -153,25 +291,37 @@ const total = subtotal + DELIVERY_FEE;
           return;
         }
 
-        /* LOAD PAYSTACK */
-        const PaystackPop = (
-          await import(
-            "@paystack/inline-js"
-          )
-        ).default;
+        /*
+         * LOAD PAYSTACK
+         */
+
+        const PaystackPop =
+          (
+            await import(
+              "@paystack/inline-js"
+            )
+          ).default;
 
         const popup =
           new PaystackPop();
 
-        popup.newTransaction({
+        /*
+         * START PAYMENT
+         */
 
+        popup.newTransaction({
           key: publicKey,
 
           email,
 
-          amount: total * 100,
+          amount:
+            Math.round(
+              total * 100
+            ),
 
-          currency: "NGN",
+          currency:
+            storeSettings.currency ||
+            "NGN",
 
           firstname:
             firstName,
@@ -204,100 +354,195 @@ const total = subtotal + DELIVERY_FEE;
                 value:
                   state,
               },
+
+              {
+                display_name:
+                  "Delivery Fee",
+
+                variable_name:
+                  "delivery_fee",
+
+                value:
+                  deliveryFee.toString(),
+              },
             ],
           },
 
-          async onSuccess(transaction: any) {
-
+          async onSuccess(
+            transaction: any
+          ) {
             try {
+              /*
+               * SEND ORDER TO SERVER
+               *
+               * IMPORTANT:
+               *
+               * We send the cart and
+               * customer information,
+               * but the server will
+               * independently load the
+               * current delivery fee
+               * from Supabase.
+               */
 
-              /* SEND ORDER EMAIL ONLY AFTER PAYMENT SUCCESS */
-              await fetch(
-                "/api/checkout",
-                {
-                  method: "POST",
+              const response =
+                await fetch(
+                  "/api/checkout",
+                  {
+                    method: "POST",
 
-                  headers: {
-                    "Content-Type":
-                      "application/json",
-                  },
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                    },
 
-                  body: JSON.stringify({
-                  email,
-                  firstName,
-                  lastName,
-                  phone,
-                  address,
-                  country,
-                  state,
-                  cart,
-                  subtotal,
-                  deliveryFee:
-                    DELIVERY_FEE,
-                  total,
-                  reference:
-                    transaction.reference,
-                }),
-                }
-              );
+                    body:
+                      JSON.stringify({
+                        email,
+                        firstName,
+                        lastName,
+                        phone,
+                        address,
+                        country,
+                        state,
+                        cart,
+
+                        /*
+                         * These values are
+                         * informational only.
+                         *
+                         * The server will
+                         * calculate the
+                         * authoritative
+                         * values.
+                         */
+
+                        subtotal,
+                        deliveryFee,
+                        total,
+
+                        reference:
+                          transaction.reference,
+                      }),
+                  }
+                );
+
+              const result =
+                await response.json();
+
+              if (!response.ok) {
+                throw new Error(
+                  result.error ||
+                    "Unable to create order."
+                );
+              }
 
               clearCart();
 
               window.location.href =
                 `/success?reference=${transaction.reference}` +
-                `&email=${email}` +
-                `&amount=${total}` +
-                `&firstName=${firstName}` +
-                `&state=${state}`;
-
-            } catch {
+                `&email=${encodeURIComponent(
+                  email
+                )}` +
+                `&amount=${result.total || total}` +
+                `&firstName=${encodeURIComponent(
+                  firstName
+                )}` +
+                `&state=${encodeURIComponent(
+                  state
+                )}`;
+            } catch (
+              checkoutError
+            ) {
+              console.error(
+                "Checkout confirmation error:",
+                checkoutError
+              );
 
               setMessage(
-                "Payment succeeded but confirmation failed."
+                checkoutError instanceof
+                  Error
+                  ? checkoutError.message
+                  : "Payment succeeded but confirmation failed."
               );
             }
           },
 
           onCancel() {
-
             setMessage(
               "Payment cancelled."
             );
           },
         });
-
-      } catch {
+      } catch (
+        paymentError
+      ) {
+        console.error(
+          "Payment initialization error:",
+          paymentError
+        );
 
         setMessage(
           "Unable to initialize payment."
         );
-
       } finally {
-
         setLoading(false);
-
       }
     };
+
+  /*
+   * STORE NOT ACCEPTING ORDERS
+   */
+
+  const ordersPaused =
+    storeSettings &&
+    !storeSettings.accepting_orders;
 
   return (
     <main className="min-h-screen bg-[#0d0d0d] text-white">
 
       <Navbar />
 
-      <section className="px-4 pt-28 pb-20 md:px-6 md:pt-32">
+      <section className="px-4 pb-20 pt-28 md:px-6 md:pt-32">
 
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2">
 
-          {/* LEFT SIDE */}
+          {/* LEFT */}
+
           <div>
 
             <h1 className="mb-10 text-4xl font-light md:text-6xl">
               Checkout
             </h1>
 
+            {/* SETTINGS LOADING */}
+
+            {settingsLoading && (
+              <div className="mb-6 rounded-[24px] border border-neutral-800 bg-neutral-950 px-6 py-5 text-sm text-neutral-500">
+                Loading checkout settings...
+              </div>
+            )}
+
+            {/* ORDERS PAUSED */}
+
+            {ordersPaused && (
+              <div className="mb-6 rounded-[24px] border border-red-900 bg-red-950/20 px-6 py-5">
+
+                <p className="text-sm text-red-400">
+                  Orders are currently paused.
+                </p>
+
+                <p className="mt-2 text-xs text-neutral-500">
+                  Please check back later.
+                </p>
+
+              </div>
+            )}
+
             <div className="space-y-5">
 
               {/* EMAIL */}
+
               <input
                 type="email"
                 required
@@ -312,6 +557,7 @@ const total = subtotal + DELIVERY_FEE;
               />
 
               {/* NAME */}
+
               <div className="grid gap-4 md:grid-cols-2">
 
                 <input
@@ -343,6 +589,7 @@ const total = subtotal + DELIVERY_FEE;
               </div>
 
               {/* PHONE */}
+
               <input
                 type="text"
                 required
@@ -357,6 +604,7 @@ const total = subtotal + DELIVERY_FEE;
               />
 
               {/* ADDRESS */}
+
               <input
                 type="text"
                 required
@@ -371,6 +619,7 @@ const total = subtotal + DELIVERY_FEE;
               />
 
               {/* COUNTRY */}
+
               <select
                 value={country}
                 onChange={(e) =>
@@ -380,14 +629,13 @@ const total = subtotal + DELIVERY_FEE;
                 }
                 className="h-14 w-full rounded-full border border-neutral-800 bg-neutral-950 px-6 outline-none transition focus:border-white"
               >
-
                 <option value="Nigeria">
                   Nigeria
                 </option>
-
               </select>
 
               {/* STATE */}
+
               <select
                 required
                 value={state}
@@ -398,7 +646,6 @@ const total = subtotal + DELIVERY_FEE;
                 }
                 className="h-14 w-full rounded-full border border-neutral-800 bg-neutral-950 px-6 outline-none transition focus:border-white"
               >
-
                 <option value="">
                   Select State
                 </option>
@@ -417,29 +664,26 @@ const total = subtotal + DELIVERY_FEE;
                     </option>
                   )
                 )}
-
               </select>
 
               {/* MESSAGE */}
+
               {message && (
-
                 <div className="rounded-[24px] border border-neutral-800 bg-neutral-950 px-6 py-5 text-sm text-neutral-300">
-
                   {message}
-
                 </div>
-
               )}
 
             </div>
 
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT */}
+
           <div className="rounded-[32px] border border-neutral-900 bg-neutral-950 p-8">
 
             <p className="mb-3 text-xs uppercase tracking-[0.3em] text-neutral-500">
-              Nationwide Delivery Included
+              Nationwide Delivery
             </p>
 
             <h2 className="text-2xl font-light">
@@ -448,94 +692,125 @@ const total = subtotal + DELIVERY_FEE;
 
             <div className="mt-8 space-y-5">
 
-              {cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between border-b border-neutral-800 pb-5"
-                >
+              {cart.map(
+                (item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between border-b border-neutral-800 pb-5"
+                  >
 
-                  <div>
+                    <div>
 
-                    <p className="text-lg">
-                      {item.name}
-                    </p>
+                      <p className="text-lg">
+                        {item.name}
+                      </p>
 
-                    <p className="text-sm text-neutral-500">
-                      Qty:{" "}
-                      {item.quantity}
+                      <p className="text-sm text-neutral-500">
+                        Qty:{" "}
+                        {item.quantity}
+                      </p>
+
+                    </div>
+
+                    <p>
+                      {item.price}
                     </p>
 
                   </div>
-
-                  <p>
-                    {item.price}
-                  </p>
-
-                </div>
-              ))}
+                )
+              )}
 
             </div>
 
             {/* SUBTOTAL */}
-          <div className="mt-10 flex items-center justify-between border-b border-neutral-800 pb-4">
 
-            <p>Subtotal</p>
+            <div className="mt-10 flex items-center justify-between border-b border-neutral-800 pb-4">
 
-            <p>
-              ₦
-              {subtotal.toLocaleString()}
-            </p>
+              <p>
+                Subtotal
+              </p>
 
-          </div>
+              <p>
+                ₦
+                {subtotal.toLocaleString(
+                  "en-NG"
+                )}
+              </p>
 
-          {/* DELIVERY */}
-          <div className="mt-4 flex items-center justify-between border-b border-neutral-800 pb-4">
+            </div>
 
-            <p>Delivery Fee</p>
+            {/* DELIVERY */}
 
-            <p>
-              ₦
-              {DELIVERY_FEE.toLocaleString()}
-            </p>
+            <div className="mt-4 flex items-center justify-between border-b border-neutral-800 pb-4">
 
-          </div>
+              <p>
+                Delivery Fee
+              </p>
 
-          {/* TOTAL */}
-          <div className="mt-4 flex items-center justify-between text-xl">
+              <p>
+                ₦
+                {deliveryFee.toLocaleString(
+                  "en-NG"
+                )}
+              </p>
 
-            <p>Total</p>
+            </div>
 
-            <p>
-              ₦
-              {total.toLocaleString()}
-            </p>
+            {/* TOTAL */}
 
-          </div>
+            <div className="mt-4 flex items-center justify-between text-xl">
 
-          {/* DELIVERY NOTICE */}
-          <div className="mt-8 rounded-[24px] border border-neutral-800 bg-black px-6 py-5">
+              <p>
+                Total
+              </p>
 
-            <p className="text-center text-sm uppercase tracking-[0.2em] text-neutral-400">
-              Delivery takes <span className="font-medium text-white">3–5 business days</span>.
-            </p>
+              <p>
+                ₦
+                {total.toLocaleString(
+                  "en-NG"
+                )}
+              </p>
 
-          </div>
+            </div>
+
+            {/* DELIVERY NOTICE */}
+
+            <div className="mt-8 rounded-[24px] border border-neutral-800 bg-black px-6 py-5">
+
+              <p className="text-center text-sm uppercase tracking-[0.2em] text-neutral-400">
+                Delivery takes{" "}
+                <span className="font-medium text-white">
+                  3–5 business days
+                </span>
+                .
+              </p>
+
+            </div>
 
             {/* BUTTON */}
+
             <div className="mt-10">
 
               <button
                 onClick={
                   handlePayment
                 }
-                disabled={loading}
-                className="h-14 w-full rounded-full bg-white text-sm font-medium uppercase tracking-[0.2em] text-black transition hover:bg-neutral-200 disabled:opacity-50"
+                disabled={
+                  loading ||
+                  settingsLoading ||
+                  !storeSettings ||
+                  Boolean(
+                    ordersPaused
+                  ) ||
+                  cart.length === 0
+                }
+                className="h-14 w-full rounded-full bg-white text-sm font-medium uppercase tracking-[0.2em] text-black transition hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
               >
-
                 {loading
                   ? "Processing..."
+                  : ordersPaused
+                  ? "Orders Paused"
                   : "Complete Payment"}
-
               </button>
 
             </div>

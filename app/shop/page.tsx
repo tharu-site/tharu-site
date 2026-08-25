@@ -1,285 +1,275 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-import { products } from "@/components/products";
+import { supabase } from "@/lib/supabase";
+
+type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  short_description: string | null;
+  description: string | null;
+  price: number;
+  stock: number;
+
+  /*
+   * MANUAL SOLD OUT STATUS
+   */
+  is_sold_out: boolean;
+
+  black_image: string | null;
+  brown_image: string | null;
+};
 
 export default function ShopPage() {
+  const [products, setProducts] =
+    useState<Product[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("products")
+        .select(
+          `
+          id,
+          name,
+          slug,
+          short_description,
+          description,
+          price,
+          stock,
+          is_sold_out,
+          black_image,
+          brown_image
+          `
+        )
+        .order("created_at", {
+          ascending: true,
+        });
+
+      if (error) {
+        console.error(
+          "Error loading shop products:",
+          error
+        );
+
+        setError(
+          "Unable to load products."
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      setProducts(data || []);
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#0d0d0d] text-white">
 
       <Navbar />
 
-      {/* PRODUCTS */}
-      <section className="px-4 pt-28 pb-20 md:px-6 md:pt-32 md:pb-24">
-
-        <div className="mx-auto max-w-5xl">
-
-          {/* PRODUCTS GRID */}
-          <div className="grid grid-cols-2 gap-4 md:gap-8">
-
-            {products.map((product) => (
-              <Link
-                key={product.id}
-                href={`/shop/${product.id}`}
-                className="group"
-              >
-
-                <div className="overflow-hidden rounded-[24px] border border-neutral-800 bg-neutral-950 p-3 transition hover:border-neutral-600 md:rounded-[28px] md:p-4">
-
-                  {/* IMAGE */}
-                  <div className="relative h-[180px] overflow-hidden rounded-[18px] bg-black md:h-[420px] md:rounded-[20px]">
-
-                    <Image
-                      src={product.variants.black}
-                      alt={product.name}
-                      fill
-                      className="object-cover object-center transition duration-500 group-hover:scale-[1.02]"
-                    />
-
-                  </div>
-
-                  {/* CONTENT */}
-                  <div className="pt-4 md:pt-5">
-
-                    <h2 className="text-sm font-light leading-snug md:text-2xl">
-                      {product.name}
-                    </h2>
-
-                    <p className="mt-2 text-[11px] leading-relaxed text-neutral-400 md:text-sm">
-                      {product.shortDescription}
-                    </p>
-
-                  
-                   {/* PRICE */}
-                  <div className="mt-3">
-
-                    <p className="text-sm text-white md:text-base">
-                      {product.originalPrice}
-                    </p>
-
-                  </div>
-
-                    <button className="mt-4 rounded-full border border-neutral-700 px-4 py-1.5 text-[10px] uppercase tracking-wide transition hover:border-white md:mt-5 md:px-5 md:py-2 md:text-sm">
-
-                      View Product
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-              </Link>
-            ))}
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* EDITORIAL SECTION */}
-      <section className="border-t border-neutral-900 px-6 py-24 md:px-10 md:py-32">
+      <section className="px-6 pb-24 pt-28 md:px-10 md:pt-32">
 
         <div className="mx-auto max-w-7xl">
 
-          {/* HEADER */}
-          <div className="mb-24 max-w-4xl">
+          {/* LOADING */}
 
-            <p className="mb-5 text-sm uppercase tracking-[0.4em] text-neutral-500">
-              Crafted With Restraint
-            </p>
+          {loading && (
+            <div className="py-24 text-center">
 
-            <h2 className="text-5xl font-light leading-tight md:text-7xl">
-              Designed with clarity,
-              precision, and quiet presence.
-            </h2>
-
-          </div>
-
-          <div className="space-y-32">
-
-            {/* THE CASE */}
-            <div className="grid gap-12 border-b border-neutral-900 pb-20 md:grid-cols-2">
-
-              <div>
-
-                <p className="text-sm uppercase tracking-[0.35em] text-neutral-500">
-                  The Case
-                </p>
-
-              </div>
-
-              <div className="space-y-6 text-lg leading-relaxed text-neutral-300">
-
-                <p>
-                  THARU features a clean, restrained case design shaped with sharp
-                  lines, balanced proportions, and subtle detailing throughout.
-                </p>
-
-                <p>
-                  Multiple finishing processes are used during production to achieve
-                  the crisp edges, smooth transitions, and refined surfaces that
-                  define the watch’s profile.
-                </p>
-
-                <p>
-                  A brushed finish gives the case a modern, understated character,
-                  while polished details along the bezel catch light subtly, adding
-                  depth without excess.
-                </p>
-
-              </div>
+              <p className="text-xs uppercase tracking-[0.3em] text-neutral-600">
+                Loading collection...
+              </p>
 
             </div>
+          )}
 
-            {/* THE DIAL */}
-            <div className="grid gap-12 border-b border-neutral-900 pb-20 md:grid-cols-2">
+          {/* ERROR */}
 
-              <div>
+          {!loading && error && (
+            <div className="rounded-[28px] border border-neutral-800 bg-neutral-950 p-10 text-center">
 
-                <p className="text-sm uppercase tracking-[0.35em] text-neutral-500">
-                  The Dial
-                </p>
-
-              </div>
-
-              <div className="space-y-6 text-lg leading-relaxed text-neutral-300">
-
-                <p>
-                  The dial is designed with a focus on balance, depth, and restraint.
-                  Applied markers and clean spacing create a layout that remains
-                  highly legible while maintaining a minimal appearance.
-                </p>
-
-                <p>
-                  Subtle contrasts across the dial surface add dimension under
-                  changing light, while the hands are finished for clear visibility
-                  throughout the day.
-                </p>
-
-                <p>
-                  Surrounding the dial is a refined chapter ring featuring minute
-                  markings that add structure and precision to the overall design
-                  without overwhelming the watch’s clean profile.
-                </p>
-
-              </div>
+              <p className="text-sm text-neutral-400">
+                {error}
+              </p>
 
             </div>
+          )}
 
-            {/* THE STRAP */}
-            <div className="grid gap-12 border-b border-neutral-900 pb-20 md:grid-cols-2">
+          {/* EMPTY */}
 
-              <div>
+          {!loading &&
+            !error &&
+            products.length === 0 && (
+              <div className="rounded-[28px] border border-neutral-800 bg-neutral-950 p-12 text-center">
 
-                <p className="text-sm uppercase tracking-[0.35em] text-neutral-500">
-                  The Strap
+                <h2 className="text-2xl font-light">
+                  Collection coming soon
+                </h2>
+
+                <p className="mt-3 text-sm text-neutral-500">
+                  New THARU pieces will appear here.
                 </p>
 
               </div>
+            )}
 
-              <div className="space-y-6 text-lg leading-relaxed text-neutral-300">
+          {/* PRODUCTS */}
 
-                <p>
-                  The THARU strap is designed to complement the watch with the same
-                  level of restraint and simplicity carried throughout the case and
-                  dial.
-                </p>
+          {!loading &&
+            !error &&
+            products.length > 0 && (
+              <div
+                className={`mx-auto grid gap-8 ${
+                  products.length === 1
+                    ? "max-w-xl grid-cols-1"
+                    : products.length === 2
+                    ? "max-w-5xl grid-cols-1 md:grid-cols-2"
+                    : "max-w-7xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                }`}
+              >
 
-                <p>
-                  Crafted from genuine leather, the strap offers a clean profile,
-                  soft feel, and comfortable fit for everyday wear.
-                </p>
+                {products.map(
+                  (product) => {
 
-                <p>
-                  Available in both black and brown finishes, each option brings a
-                  distinct character while maintaining the watch’s understated
-                  aesthetic.
-                </p>
+                    const image =
+                      product.black_image ||
+                      product.brown_image;
 
-                <p>
-                  Designed for versatility, the strap transitions naturally between
-                  casual and formal settings, reinforcing THARU’s focus on modern,
-                  everyday wear.
-                </p>
+                    /*
+                     * PRODUCT IS SOLD OUT IF:
+                     *
+                     * 1. Admin manually marked it sold out
+                     * OR
+                     * 2. Stock is zero
+                     */
+
+                    const outOfStock =
+                      product.is_sold_out ||
+                      product.stock <= 0;
+
+                    return (
+                      <Link
+                        key={product.id}
+                        href={`/shop/${product.id}`}
+                        className="group"
+                      >
+
+                        {/* IMAGE */}
+
+                        <div className="relative overflow-hidden rounded-[30px] border border-neutral-800 bg-black">
+
+                          <div className="relative aspect-[4/3] overflow-hidden rounded-[24px]">
+
+                            {image ? (
+
+                              <img
+                                src={image}
+                                alt={product.name}
+                                className={`h-full w-full object-cover transition duration-700 group-hover:scale-[1.03] ${
+                                  outOfStock
+                                    ? "opacity-60"
+                                    : ""
+                                }`}
+                              />
+
+                            ) : (
+
+                              <div className="flex h-full items-center justify-center">
+
+                                <p className="text-xs uppercase tracking-[0.2em] text-neutral-700">
+                                  No image
+                                </p>
+
+                              </div>
+
+                            )}
+
+                            {/* SOLD OUT BADGE */}
+
+                            {outOfStock && (
+                              <div className="absolute left-5 top-5 rounded-full border border-neutral-700 bg-black/80 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-neutral-300 backdrop-blur">
+                                Sold Out
+                              </div>
+                            )}
+
+                          </div>
+
+                        </div>
+
+                        {/* INFORMATION */}
+
+                        <div className="mt-6">
+
+                          <div className="flex items-start justify-between gap-5">
+
+                            <div>
+
+                              <h2 className="text-xl font-light">
+                                {product.name}
+                              </h2>
+
+                              <p className="mt-2 max-w-sm text-sm leading-relaxed text-neutral-500">
+                                {
+                                  product.short_description
+                                }
+                              </p>
+
+                            </div>
+
+                            <p className="shrink-0 text-sm text-white">
+                              ₦
+                              {Number(
+                                product.price
+                              ).toLocaleString()}
+                            </p>
+
+                          </div>
+
+                          <div className="mt-5 flex items-center justify-between border-t border-neutral-900 pt-4">
+
+                            <span className="text-[10px] uppercase tracking-[0.25em] text-neutral-600">
+                              {outOfStock
+                                ? "View Product"
+                                : "View Product"}
+                            </span>
+
+                            <span className="text-neutral-600 transition group-hover:translate-x-1 group-hover:text-white">
+                              →
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                      </Link>
+                    );
+                  }
+                )}
 
               </div>
-
-            </div>
-
-            {/* THE CASEBACK */}
-            <div className="grid gap-12 border-b border-neutral-900 pb-20 md:grid-cols-2">
-
-              <div>
-
-                <p className="text-sm uppercase tracking-[0.35em] text-neutral-500">
-                  The Caseback
-                </p>
-
-              </div>
-
-              <div className="space-y-6 text-lg leading-relaxed text-neutral-300">
-
-                <p>
-                  The caseback continues THARU’s restrained design approach with a
-                  clean, minimal layout and carefully placed detailing.
-                </p>
-
-                <p>
-                  Finished with a brushed surface and engraved markings, the
-                  caseback features essential specifications including water
-                  resistance and movement information while maintaining a refined
-                  appearance.
-                </p>
-
-                <p>
-                  Designed to feel understated rather than excessive, every detail
-                  serves a purpose while reinforcing the watch’s modern character.
-                </p>
-
-              </div>
-
-            </div>
-
-            {/* THE MOVEMENT */}
-            <div className="grid gap-12 md:grid-cols-2">
-
-              <div>
-
-                <p className="text-sm uppercase tracking-[0.35em] text-neutral-500">
-                  The Movement
-                </p>
-
-              </div>
-
-              <div className="space-y-6 text-lg leading-relaxed text-neutral-300">
-
-                <p>
-                  THARU is powered by a reliable quartz movement selected for its
-                  accuracy, consistency, and everyday practicality.
-                </p>
-
-                <p>
-                  Designed for dependable timekeeping with minimal maintenance, the
-                  movement delivers a straightforward experience focused on precision
-                  and ease of use.
-                </p>
-
-                <p>
-                  Built to support daily wear, it reflects THARU’s approach to
-                  creating watches that feel refined, functional, and intentionally
-                  uncomplicated.
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
+            )}
 
         </div>
 

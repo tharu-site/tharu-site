@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 
 import Navbar from "@/components/Navbar";
@@ -9,7 +8,6 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/components/CartContext";
 
 export default function CartPage() {
-
   const {
     cart,
     removeFromCart,
@@ -18,13 +16,14 @@ export default function CartPage() {
 
   const total = cart.reduce(
     (acc, item) => {
-
       const price = Number(
         item.price.replace(/[^0-9]/g, "")
       );
 
-      return acc + price * item.quantity;
-
+      return (
+        acc +
+        price * item.quantity
+      );
     },
     0
   );
@@ -34,7 +33,7 @@ export default function CartPage() {
 
       <Navbar />
 
-      <section className="px-4 pt-28 pb-20 md:px-6 md:pt-32">
+      <section className="px-4 pb-20 pt-28 md:px-6 md:pt-32">
 
         <div className="mx-auto max-w-5xl">
 
@@ -42,51 +41,74 @@ export default function CartPage() {
             Cart
           </h1>
 
+          {/* EMPTY CART */}
+
           {cart.length === 0 ? (
+
             <div className="text-neutral-400">
 
-              Your cart is empty.
+              <p>
+                Your cart is empty.
+              </p>
 
               <div className="mt-8">
 
                 <Link
                   href="/shop"
-                  className="rounded-full border border-neutral-700 px-6 py-3 transition hover:border-white"
+                  className="inline-flex rounded-full border border-neutral-700 px-6 py-3 transition hover:border-white"
                 >
-
                   Continue Shopping
-
                 </Link>
 
               </div>
 
             </div>
+
           ) : (
+
             <>
 
               {/* CART ITEMS */}
+
               <div className="space-y-6">
 
                 {cart.map((item) => (
+
                   <div
                     key={item.id}
-                    className="flex gap-4 rounded-[28px] border border-neutral-800 bg-neutral-950 p-4"
+                    className="flex gap-4 rounded-[28px] border border-neutral-800 bg-neutral-950 p-4 md:gap-6 md:p-5"
                   >
 
                     {/* IMAGE */}
-                    <div className="relative h-[120px] w-[120px] overflow-hidden rounded-[20px] bg-black">
 
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-contain"
-                      />
+                    <div className="relative h-[120px] w-[120px] shrink-0 overflow-hidden rounded-[20px] bg-black md:h-[160px] md:w-[160px]">
+
+                      {item.image ? (
+
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-full w-full object-contain"
+                          draggable={false}
+                        />
+
+                      ) : (
+
+                        <div className="flex h-full w-full items-center justify-center px-4 text-center">
+
+                          <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-700">
+                            No image
+                          </span>
+
+                        </div>
+
+                      )}
 
                     </div>
 
                     {/* INFO */}
-                    <div className="flex flex-1 flex-col justify-between">
+
+                    <div className="flex min-w-0 flex-1 flex-col justify-between">
 
                       <div>
 
@@ -100,12 +122,16 @@ export default function CartPage() {
 
                       </div>
 
-                      {/* QUANTITY */}
-                      <div className="mt-4 flex items-center justify-between">
+                      {/* QUANTITY + REMOVE */}
+
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+
+                        {/* QUANTITY */}
 
                         <div className="flex items-center rounded-full border border-neutral-700">
 
                           <button
+                            type="button"
                             onClick={() =>
                               updateQuantity(
                                 item.id,
@@ -116,10 +142,9 @@ export default function CartPage() {
                               )
                             }
                             className="px-4 py-2 transition hover:bg-white hover:text-black"
+                            aria-label="Decrease quantity"
                           >
-
                             −
-
                           </button>
 
                           <span className="min-w-[40px] text-center text-sm">
@@ -127,6 +152,7 @@ export default function CartPage() {
                           </span>
 
                           <button
+                            type="button"
                             onClick={() =>
                               updateQuantity(
                                 item.id,
@@ -134,23 +160,25 @@ export default function CartPage() {
                               )
                             }
                             className="px-4 py-2 transition hover:bg-white hover:text-black"
+                            aria-label="Increase quantity"
                           >
-
                             +
-
                           </button>
 
                         </div>
 
+                        {/* REMOVE */}
+
                         <button
+                          type="button"
                           onClick={() =>
-                            removeFromCart(item.id)
+                            removeFromCart(
+                              item.id
+                            )
                           }
                           className="text-sm text-neutral-500 transition hover:text-white"
                         >
-
                           Remove
-
                         </button>
 
                       </div>
@@ -158,11 +186,13 @@ export default function CartPage() {
                     </div>
 
                   </div>
+
                 ))}
 
               </div>
 
               {/* TOTAL */}
+
               <div className="mt-10 flex items-center justify-between border-t border-neutral-800 pt-8">
 
                 <p className="text-lg text-neutral-400">
@@ -170,35 +200,34 @@ export default function CartPage() {
                 </p>
 
                 <p className="text-2xl font-light">
-                  ₦{total.toLocaleString()}
+                  ₦
+                  {total.toLocaleString()}
                 </p>
 
               </div>
 
               {/* BUTTONS */}
+
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
 
                 <Link
                   href="/shop"
                   className="rounded-full border border-neutral-700 px-8 py-3 text-center transition hover:border-white"
                 >
-
                   Continue Shopping
-
                 </Link>
 
                 <Link
                   href="/checkout"
                   className="rounded-full bg-white px-8 py-3 text-center text-black transition hover:bg-neutral-200"
                 >
-
                   Proceed to Checkout
-
                 </Link>
 
               </div>
 
             </>
+
           )}
 
         </div>

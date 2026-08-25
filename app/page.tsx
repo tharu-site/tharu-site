@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import FirstRun from "@/components/FirstRun";
 import BrandSection from "@/components/BrandSection";
 import Features from "@/components/Features";
-import CinematicSlider from "@/components/CinematicSlider";
+import Reviews from "@/components/Reviews";
 import Specs from "@/components/Specs";
 import Story from "@/components/Story";
 import Newsletter from "@/components/Newsletter";
@@ -17,7 +17,8 @@ export default function Home() {
 
       <Hero />
 
-      <CinematicSlider />
+      {/* CUSTOMER REVIEWS */}
+      <Reviews />
 
       <FirstRun />
 
