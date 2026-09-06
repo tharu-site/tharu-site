@@ -58,6 +58,12 @@ type StoreSettings = {
   currency: string;
 };
 
+type DeliveryFee = {
+  state: string;
+  fee: number;
+  active: boolean;
+};
+
 export default function CheckoutPage() {
   const {
     cart,
@@ -91,11 +97,17 @@ export default function CheckoutPage() {
   const [settingsLoading, setSettingsLoading] =
     useState(true);
 
+  const [deliveryFeesLoading, setDeliveryFeesLoading] =
+    useState(true);
+
   const [message, setMessage] =
     useState("");
 
   const [storeSettings, setStoreSettings] =
     useState<StoreSettings | null>(null);
+
+  const [deliveryFees, setDeliveryFees] =
+    useState<DeliveryFee[]>([]);
 
   /*
    * LOAD STORE SETTINGS
@@ -150,6 +162,71 @@ export default function CheckoutPage() {
   }, []);
 
   /*
+   * LOAD STATE DELIVERY FEES
+   */
+
+  useEffect(() => {
+    const loadDeliveryFees = async () => {
+      setDeliveryFeesLoading(true);
+
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("delivery_fees")
+        .select(
+          "state, fee, active"
+        )
+        .eq("active", true);
+
+      if (error) {
+        console.error(
+          "Delivery fees error:",
+          error
+        );
+
+        /*
+         * Do not break checkout if
+         * state delivery fees cannot
+         * be loaded.
+         *
+         * The default store delivery
+         * fee will be used instead.
+         */
+
+        setDeliveryFees([]);
+
+        setDeliveryFeesLoading(false);
+
+        return;
+      }
+
+      setDeliveryFees(
+        (data || []).map(
+          (item) => ({
+            state: String(
+              item.state
+            ).trim(),
+
+            fee: Number(
+              item.fee
+            ),
+
+            active:
+              Boolean(
+                item.active
+              ),
+          })
+        )
+      );
+
+      setDeliveryFeesLoading(false);
+    };
+
+    loadDeliveryFees();
+  }, []);
+
+  /*
    * SUBTOTAL
    */
 
@@ -175,13 +252,58 @@ export default function CheckoutPage() {
   }, [cart]);
 
   /*
+   * SELECTED STATE DELIVERY FEE
+   *
+   * The selected state gets its
+   * own delivery fee if one exists.
+   *
+   * Otherwise we use the default
+   * delivery fee from store_settings.
+   */
+
+  const selectedStateFee =
+    useMemo(() => {
+      if (!state) {
+        return null;
+      }
+
+      const normalizedState =
+        state
+          .trim()
+          .toLowerCase();
+
+      const matchingFee =
+        deliveryFees.find(
+          (item) =>
+            item.active &&
+            item.state
+              .trim()
+              .toLowerCase() ===
+              normalizedState
+        );
+
+      if (!matchingFee) {
+        return null;
+      }
+
+      return Number(
+        matchingFee.fee
+      );
+    }, [
+      state,
+      deliveryFees,
+    ]);
+
+  /*
    * DELIVERY FEE
    */
 
   const deliveryFee =
-    Number(
-      storeSettings?.delivery_fee ?? 0
-    );
+    selectedStateFee !== null
+      ? selectedStateFee
+      : Number(
+          storeSettings?.delivery_fee ?? 0
+        );
 
   /*
    * TOTAL
@@ -236,7 +358,10 @@ export default function CheckoutPage() {
 
   const handlePayment =
     async () => {
-      if (settingsLoading) {
+      if (
+        settingsLoading ||
+        deliveryFeesLoading
+      ) {
         setMessage(
           "Please wait while checkout settings load."
         );
@@ -374,15 +499,6 @@ export default function CheckoutPage() {
             try {
               /*
                * SEND ORDER TO SERVER
-               *
-               * IMPORTANT:
-               *
-               * We send the cart and
-               * customer information,
-               * but the server will
-               * independently load the
-               * current delivery fee
-               * from Supabase.
                */
 
               const response =
@@ -409,12 +525,11 @@ export default function CheckoutPage() {
 
                         /*
                          * These values are
-                         * informational only.
+                         * informational.
                          *
-                         * The server will
-                         * calculate the
-                         * authoritative
-                         * values.
+                         * The server independently
+                         * calculates the actual
+                         * delivery fee.
                          */
 
                         subtotal,
@@ -498,6 +613,11 @@ export default function CheckoutPage() {
     storeSettings &&
     !storeSettings.accepting_orders;
 
+  /*
+   * WHETHER THE CUSTOMER HAS
+   * A CUSTOM STATE FEE
+   */
+
   return (
     <main className="min-h-screen bg-[#0d0d0d] text-white">
 
@@ -522,6 +642,15 @@ export default function CheckoutPage() {
                 Loading checkout settings...
               </div>
             )}
+
+            {/* DELIVERY FEES LOADING */}
+
+            {!settingsLoading &&
+              deliveryFeesLoading && (
+                <div className="mb-6 rounded-[24px] border border-neutral-800 bg-neutral-950 px-6 py-5 text-sm text-neutral-500">
+                  Loading delivery rates...
+                </div>
+              )}
 
             {/* ORDERS PAUSED */}
 
@@ -666,6 +795,45 @@ export default function CheckoutPage() {
                 )}
               </select>
 
+              {/* STATE DELIVERY INFORMATION */}
+
+              {state && (
+                <div className="rounded-[24px] border border-neutral-800 bg-neutral-950 px-6 py-5">
+
+                  <div className="flex items-center justify-between gap-4">
+
+                    <div>
+
+                      <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                        Delivery to
+                      </p>
+
+                      <p className="mt-2 text-sm text-white">
+                        {state}
+                      </p>
+
+                    </div>
+
+                    <div className="text-right">
+
+                      <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                        Delivery Fee
+                      </p>
+
+                      <p className="mt-2 text-lg text-white">
+                        ₦
+                        {deliveryFee.toLocaleString(
+                          "en-NG"
+                        )}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
+
               {/* MESSAGE */}
 
               {message && (
@@ -743,9 +911,19 @@ export default function CheckoutPage() {
 
             <div className="mt-4 flex items-center justify-between border-b border-neutral-800 pb-4">
 
-              <p>
-                Delivery Fee
-              </p>
+              <div>
+
+                <p>
+                  Delivery Fee
+                </p>
+
+                {state && (
+                  <p className="mt-1 text-xs text-neutral-500">
+                    {state}
+                  </p>
+                )}
+
+              </div>
 
               <p>
                 ₦
@@ -775,17 +953,13 @@ export default function CheckoutPage() {
 
             {/* DELIVERY NOTICE */}
 
-            <div className="mt-8 rounded-[24px] border border-neutral-800 bg-black px-6 py-5">
-
-              <p className="text-center text-sm uppercase tracking-[0.2em] text-neutral-400">
-                Delivery takes{" "}
-                <span className="font-medium text-white">
-                  3–5 business days
-                </span>
-                .
-              </p>
-
-            </div>
+            <p className="mt-8 text-center text-sm uppercase tracking-[0.2em] text-neutral-400">
+            Delivery takes{" "}
+            <span className="font-medium text-white">
+              3–5 business days
+            </span>
+            .
+          </p>
 
             {/* BUTTON */}
 
@@ -798,6 +972,7 @@ export default function CheckoutPage() {
                 disabled={
                   loading ||
                   settingsLoading ||
+                  deliveryFeesLoading ||
                   !storeSettings ||
                   Boolean(
                     ordersPaused

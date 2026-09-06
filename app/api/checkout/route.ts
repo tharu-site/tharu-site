@@ -207,16 +207,127 @@ export async function POST(
     }
 
     /*
-     * SERVER DELIVERY FEE
+     * DEFAULT DELIVERY FEE
      *
-     * Never trust the delivery fee
-     * sent from the browser.
+     * This is used only when the selected
+     * state does not have an active
+     * state-specific delivery fee.
      */
 
-    const deliveryFee =
+    const defaultDeliveryFee =
       Number(
         storeSettings.delivery_fee
       ) || 0;
+
+    /*
+     * FIND STATE-SPECIFIC DELIVERY FEE
+     *
+     * The state comes from the checkout
+     * form.
+     *
+     * IMPORTANT:
+     *
+     * We query the database directly on
+     * the server instead of trusting any
+     * delivery fee sent by the browser.
+     */
+
+    const normalizedState =
+      String(state)
+        .trim();
+
+    const {
+  data: stateDeliveryFee,
+  error: stateDeliveryFeeError,
+} =
+  await supabase
+    .from("delivery_fees")
+    .select(
+      "state, fee, active"
+    )
+    .ilike(
+      "state",
+      normalizedState
+    )
+    .eq(
+      "active",
+      true
+    )
+    .maybeSingle();
+
+    /*
+     * DELIVERY FEE DATABASE ERROR
+     */
+
+    if (
+      stateDeliveryFeeError
+    ) {
+      console.error(
+        "State delivery fee error:",
+        stateDeliveryFeeError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Unable to determine the delivery fee for this state.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    /*
+     * SERVER-AUTHORITATIVE DELIVERY FEE
+     *
+     * State-specific fee takes priority.
+     *
+     * Otherwise use the default fee.
+     */
+
+    const deliveryFee =
+      stateDeliveryFee &&
+      stateDeliveryFee.active
+        ? Number(
+            stateDeliveryFee.fee
+          )
+        : defaultDeliveryFee;
+
+    /*
+     * VALIDATE DELIVERY FEE
+     */
+
+    if (
+      !Number.isFinite(
+        deliveryFee
+      ) ||
+      deliveryFee < 0
+    ) {
+      console.error(
+        "Invalid delivery fee:",
+        {
+          state:
+            normalizedState,
+
+          stateDeliveryFee,
+
+          defaultDeliveryFee,
+
+          deliveryFee,
+        }
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Invalid delivery fee configuration.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
 
     /*
      * VERIFY PAYMENT WITH PAYSTACK
@@ -498,8 +609,14 @@ export async function POST(
     /*
      * SERVER CALCULATES TOTAL
      *
-     * This uses the delivery fee
-     * from store_settings.
+     * This uses:
+     *
+     * calculatedSubtotal
+     * +
+     * state-specific delivery fee
+     *
+     * or the default delivery fee
+     * if no active state fee exists.
      */
 
     const expectedTotal =
@@ -580,6 +697,11 @@ export async function POST(
 
           deliveryFee,
 
+          state:
+            normalizedState,
+
+          stateDeliveryFee,
+
           reference,
         }
       );
@@ -590,7 +712,7 @@ export async function POST(
             "Payment amount does not match the order.",
         },
         {
-          status: 400
+          status: 400,
         }
       );
     }
@@ -646,8 +768,7 @@ export async function POST(
               : null,
 
           state:
-            String(state)
-              .trim(),
+            normalizedState,
 
           country:
             country
@@ -835,7 +956,7 @@ export async function POST(
 
           <p>
             <strong>State:</strong>
-            ${state}
+            ${normalizedState}
           </p>
 
           <p>
@@ -883,6 +1004,11 @@ export async function POST(
             ₦${deliveryFee.toLocaleString(
               "en-NG"
             )}
+          </p>
+
+          <p>
+            <strong>Delivery State:</strong>
+            ${normalizedState}
           </p>
 
           <h2>

@@ -26,7 +26,6 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2 transition-opacity hover:opacity-80 md:gap-3"
           >
-
             <Image
               src="/logo2.png"
               alt="THARU Logo"
@@ -44,7 +43,6 @@ export default function Navbar() {
               priority
               className="h-auto w-[50px] object-contain md:w-[70px]"
             />
-
           </Link>
 
           {/* DESKTOP LINKS */}
@@ -62,6 +60,11 @@ export default function Navbar() {
               About
             </Link>
 
+            {/* JOURNAL */}
+            <Link href="/blog" className="nav-link">
+              Blog
+            </Link>
+
             <Link href="/contact" className="nav-link">
               Contact
             </Link>
@@ -77,9 +80,7 @@ export default function Navbar() {
               className="hidden h-11 w-11 items-center justify-center rounded-full border border-neutral-700 text-white transition hover:border-white md:flex"
               aria-label="Cart"
             >
-
               <ShoppingBag size={18} />
-
             </Link>
 
             {/* MOBILE MENU BUTTON */}
@@ -89,9 +90,7 @@ export default function Navbar() {
               className="flex items-center justify-center text-white transition hover:opacity-80 md:hidden"
               aria-label="Open Menu"
             >
-
               <Menu size={24} />
-
             </button>
 
           </div>
@@ -113,7 +112,6 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
               className="transition-opacity hover:opacity-80"
             >
-
               <Image
                 src="/tharu-wordmark1.png"
                 alt="THARU"
@@ -121,18 +119,16 @@ export default function Navbar() {
                 height={40}
                 className="h-auto w-[70px] object-contain"
               />
-
             </Link>
 
+            {/* CLOSE BUTTON */}
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
               className="flex items-center justify-center text-white transition hover:opacity-80"
               aria-label="Close Menu"
             >
-
               <X size={28} />
-
             </button>
 
           </div>
@@ -164,6 +160,15 @@ export default function Navbar() {
               About
             </Link>
 
+            {/* JOURNAL */}
+            <Link
+              href="/blog"
+              onClick={() => setMenuOpen(false)}
+              className="transition hover:text-white"
+            >
+              Blog
+            </Link>
+
             <Link
               href="/contact"
               onClick={() => setMenuOpen(false)}
@@ -178,11 +183,8 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
               className="mt-4 flex items-center gap-3 text-xl uppercase tracking-[0.25em] text-neutral-300 transition hover:text-white"
             >
-
               <ShoppingBag size={20} />
-
               Cart
-
             </Link>
 
           </div>

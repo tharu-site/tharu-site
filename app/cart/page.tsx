@@ -208,23 +208,33 @@ export default function CartPage() {
 
               {/* BUTTONS */}
 
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+<div className="mt-10 flex flex-col items-start gap-6">
 
-                <Link
-                  href="/shop"
-                  className="rounded-full border border-neutral-700 px-8 py-3 text-center transition hover:border-white"
-                >
-                  Continue Shopping
-                </Link>
+  {/* PROCEED TO CHECKOUT */}
 
-                <Link
-                  href="/checkout"
-                  className="rounded-full bg-white px-8 py-3 text-center text-black transition hover:bg-neutral-200"
-                >
-                  Proceed to Checkout
-                </Link>
+  <Link
+    href="/checkout"
+    className="w-full rounded-full bg-white px-8 py-3 text-center text-black transition hover:bg-neutral-200 sm:w-auto"
+  >
+    Proceed to Checkout
+  </Link>
 
-              </div>
+  {/* CONTINUE SHOPPING */}
+
+  <Link
+    href="/shop"
+    className="group inline-flex items-center gap-2 text-sm uppercase tracking-[0.15em] text-neutral-400 transition hover:text-white"
+  >
+    <span className="text-lg transition-transform duration-300 group-hover:-translate-x-1">
+      ←
+    </span>
+
+    <span>
+      Continue Shopping
+    </span>
+  </Link>
+
+</div>
 
             </>
 
